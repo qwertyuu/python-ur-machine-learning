@@ -5,7 +5,7 @@ import joblib
 import math
 
 def run():
-    data = pd.read_parquet("data/dataset.parquet")
+    data = pd.read_parquet("data/dataset2.parquet")
     train_data = data.sample(frac=0.8, random_state=1)
     test_data = data.drop(train_data.index)
     # Convert the data into LightGBM's format
@@ -13,7 +13,7 @@ def run():
     test_dataset = lgb.Dataset(test_data.drop('utility', axis=1), label=test_data['utility'])
 
     # Set the model parameters
-    params = {"num_iterations": 5000, "learning_rate": 0.4, "metric": "rmse", "objective": "regression"}
+    params = {"num_iterations": 10000, "num_leaves": 255, "learning_rate": 0.3, "metric": "rmse", "objective": "regression", "early_stopping_round": 10}
 
     # Train the model
     model = lgb.train(params, train_dataset, valid_sets=[test_dataset])
@@ -22,12 +22,7 @@ def run():
 
     # Make predictions on the test set
     predictions = model.predict(test_data.drop('utility', axis=1))
-    print(test_data.drop('utility', axis=1))
-    print(predictions)
-    # Measure the performance of the predictions
-    mse = mean_squared_error(test_data['utility'], predictions)
-
-    print(f'rmse: {math.sqrt(mse)}')
+    print(pd.DataFrame({"pred": predictions, "test": test_data['utility']}))
 
 if __name__ == "__main__":
     run()
