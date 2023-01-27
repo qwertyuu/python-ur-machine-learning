@@ -2,11 +2,12 @@ from flask import Flask, jsonify, request
 import joblib
 from pandas import json_normalize
 
+model_name = "model2.pkl"
 app = Flask(__name__)
 model_pool = [
-    joblib.load("model.pkl"),
-    joblib.load("model.pkl"),
-    joblib.load("model.pkl"),
+    joblib.load(model_name),
+    joblib.load(model_name),
+    joblib.load(model_name),
 ]
 
 
@@ -21,7 +22,7 @@ def infer():
     df = df.drop(columns=["game"])
     if len(model_pool) == 0:
         print("creating model")
-        model = joblib.load("model.pkl")
+        model = joblib.load(model_name)
     else:
         model = model_pool.pop()
     q = model.predict(df)
