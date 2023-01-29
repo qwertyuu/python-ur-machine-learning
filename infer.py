@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request
 import joblib
 from pandas import json_normalize
+from src.prep import convert_game_to_cols
 
-model_name = "model2.pkl"
+model_name = "model4.pkl"
 app = Flask(__name__)
 model_pool = [
     joblib.load(model_name),
@@ -15,10 +16,9 @@ model_pool = [
 def infer():
     data = request.get_json()
     df = json_normalize(data)
-    j = df['game'].str.replace('\s|\.', '', regex=True).str.replace('D', '3').str.replace('L', '1').str.replace('-', '2').str.split('', expand=True)
-    j = j.drop([0, 21], axis=1).astype("int32") - 2
-    k = ['game' + str(i) for i in range(20)]
-    df[k] = j
+
+    df = convert_game_to_cols(df)
+    
     df = df.drop(columns=["game"])
     if len(model_pool) == 0:
         print("creating model")
