@@ -1,14 +1,13 @@
 #import lightgbm as lgb
 import pandas as pd
 import optuna
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
 import lightgbm as lgb
-from sklearn.model_selection import RepeatedKFold
 
-data = pd.read_parquet("data/dataset.parquet")
+data = pd.read_parquet("data/dataset_depth8.parquet")
+data.pop("game")
 train_data = data.sample(frac=0.8, random_state=1)
 test_data = data.drop(train_data.index)
-# Convert the data into LightGBM's format
 
 
 def objective(trial):
@@ -17,7 +16,7 @@ def objective(trial):
         'objective': 'regression',
         'metric': 'rmse',
         'boosting_type': 'gbdt',
-        'num_leaves': trial.suggest_int('num_leaves', 100, 500),
+        'num_leaves': trial.suggest_int('num_leaves', 100, 2000),
         'learning_rate': trial.suggest_float('learning_rate', 0.05, 1.0),
         'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
         'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
@@ -32,15 +31,14 @@ def objective(trial):
     test_dataset = lgb.Dataset(test_data.drop('utility', axis=1), label=test_data['utility'])
 
     # Train and evaluate the model
-    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=100, verbose_eval=50)
+    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=100)
     predictions = model.predict(test_data.drop('utility', axis=1))
-    mae = mean_absolute_error(test_data['utility'], predictions)
+    return mean_squared_error(test_data['utility'], predictions)
 
-    return mae
-
-study = optuna.create_study(direction='minimize')
+storage_name = "sqlite:///studies.db"
+study = optuna.create_study(study_name="depth_8_4", storage=storage_name, direction='minimize')
 try:
-    study.optimize(objective, n_trials=50, n_jobs=2)
+    study.optimize(objective, n_trials=1000, n_jobs=2)
 finally:
     print(study.best_params)
     print(study.best_value)
