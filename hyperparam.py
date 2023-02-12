@@ -4,7 +4,7 @@ import optuna
 from sklearn.metrics import mean_squared_error
 import lightgbm as lgb
 
-data = pd.read_parquet("data/dataset_depth8.parquet")
+data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit5.parquet")
 data.pop("game")
 train_data = data.sample(frac=0.8, random_state=1)
 test_data = data.drop(train_data.index)
@@ -16,8 +16,8 @@ def objective(trial):
         'objective': 'regression',
         'metric': 'rmse',
         'boosting_type': 'gbdt',
-        'num_leaves': trial.suggest_int('num_leaves', 100, 2000),
-        'learning_rate': trial.suggest_float('learning_rate', 0.05, 1.0),
+        'num_leaves': trial.suggest_int('num_leaves', 100, 5000),
+        'learning_rate': trial.suggest_float('learning_rate', 0.01, 1.0),
         'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),
         'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),
         'bagging_freq': trial.suggest_int('bagging_freq', 1, 7),
@@ -36,7 +36,7 @@ def objective(trial):
     return mean_squared_error(test_data['utility'], predictions)
 
 storage_name = "sqlite:///studies.db"
-study = optuna.create_study(study_name="depth_8_4", storage=storage_name, direction='minimize')
+study = optuna.create_study(study_name="depth_8_7", storage=storage_name, direction='minimize')
 try:
     study.optimize(objective, n_trials=1000, n_jobs=2)
 finally:

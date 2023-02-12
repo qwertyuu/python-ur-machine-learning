@@ -4,7 +4,7 @@ import joblib
 
 
 def run():
-    data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit3.parquet")
+    data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit5.parquet")
     data.pop("game")
     data.pop("rank")
     label = "utility"
@@ -26,22 +26,17 @@ def run():
 
     # Set the model parameters
     params = {
-        #"num_iterations": 100000,
         "metric": "rmse",
         "objective": "regression",
         "early_stopping_round": 15,
-        'feature_fraction': 0.8, 
-        'learning_rate': 0.01,
-        'num_leaves': 1000,
-        'max_bin': 10,
-        'min_child_samples': 10,
-        #'boosting': 'dart',
+        'learning_rate': 0.2,
+        'num_leaves': 10000,
     }
 
     # Train the model
-    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=10000)
+    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=5000)
     # save model
-    joblib.dump(model, 'lgb_sleep.pkl')
+    joblib.dump(model, 'lgb_much_data.pkl')
 
     # Make predictions on the test set
     predictions = model.predict(test_data.drop(label, axis=1))
