@@ -1,14 +1,13 @@
 import pandas as pd
 import lightgbm as lgb
-import joblib
 
 
 def run():
-    data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit.parquet")
-    data.pop("game")
-    data.pop("rank")
-    label = "utility"
-    
+    data = pd.read_parquet("data/evaluation_dataset.parquet")
+    data.pop("board")
+    #data.pop("rank")
+    label = "evaluation"
+
     train_data = data.sample(frac=0.8, random_state=1)
     test_data = data.drop(train_data.index)
     # Convert the data into LightGBM's format
@@ -21,8 +20,8 @@ def run():
     params = {
         "metric": "rmse",
         "objective": "regression",
-        'learning_rate': 0.2,
-        'num_leaves': 10000,
+        #'learning_rate': 0.1,
+        #'num_leaves': 1000,
     }
 
     def save_often(obj):

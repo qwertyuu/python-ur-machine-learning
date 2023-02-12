@@ -48,7 +48,7 @@ def work(data):
 
 def run():
     with ThreadPoolExecutor(max_workers = 20) as executor:
-        results = executor.map(read, glob.glob("data/expectimax_8/*.csv"))
+        results = executor.map(read, glob.glob("data/expectimax_8_evaluations/*.csv"))
 
 
     concat_data = []
@@ -61,24 +61,17 @@ def run():
         results2 = executor.map(work, split(concat_data, 100000))
 
     df = pd.concat(results2, ignore_index=True)
-    df = df.set_axis(headers + ['game' + str(i) for i in range(20)], axis=1, copy=False)
+    df = df.set_axis(headers + ['board' + str(i) for i in range(20)], axis=1, copy=False)
     df = df.astype({
-        "roll": int,
-        "x": int,
-        "y": int,
-        "light_turn": bool,
-        "light_score": int,
-        "dark_score": int,
-        "light_left": int,
-        "dark_left": int,
-        "rank": int,
-        "utility": float,
+        "light_tiles": int,
+        "dark_tiles": int,
+        "evaluation": float,
     })
     print(f"Dropping duplicates... Count before:{len(df)}")
-    df.drop_duplicates(["game", "x", "y", "roll"], inplace=True)
+    df.drop_duplicates(["board", "light_tiles", "dark_tiles"], inplace=True)
     print(f"Count after:{len(df)}")
     print(df.head())
-    df.to_parquet("data/dataset_depth8_Sam_Raph_Sothatsit6.parquet")
+    df.to_parquet("data/evaluation_dataset.parquet")
 
 
 if __name__ == "__main__":
