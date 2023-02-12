@@ -28,7 +28,7 @@ def infer():
         model = load()
     else:
         model = model_pool.pop()
-    q = m.predict(df)
+    q = model.predict(df)
     model_pool.append(model)
     return jsonify(utilities=list(q))
 
