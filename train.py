@@ -28,13 +28,21 @@ def run():
     params = {
         "metric": "rmse",
         "objective": "regression",
-        "early_stopping_round": 15,
         'learning_rate': 0.2,
         'num_leaves': 10000,
     }
 
+    def save_often(obj):
+        if obj.evaluation_result_list and (obj.iteration + 1) % 50 == 0:
+            print("Saving checkpoint to lgb_checkpoint.pkl")
+            joblib.dump(obj.model, 'lgb_checkpoint.pkl')
+
     # Train the model
-    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=5000)
+    model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=5000, callbacks=[
+        save_often,
+        lgb.callback.early_stopping(15),
+        lgb.callback.log_evaluation()
+    ])
     # save model
     joblib.dump(model, 'lgb_much_data.pkl')
 
