@@ -13,6 +13,3 @@ EXPOSE 80
 
 # Run server
 CMD ["python", "infer.py"]
-
-# Build image
-docker build -t infer .
