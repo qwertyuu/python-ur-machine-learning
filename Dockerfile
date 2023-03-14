@@ -9,7 +9,7 @@ COPY . .
 RUN pip install -r requirements.txt
 
 # Expose port 80
-EXPOSE 80
+EXPOSE 5000
 
 # Run server
 CMD ["python", "infer.py"]
