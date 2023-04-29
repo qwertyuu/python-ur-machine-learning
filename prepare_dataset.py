@@ -66,7 +66,7 @@ def run():
         "roll": int,
         "x": int,
         "y": int,
-        "light_turn": bool,
+        #"light_turn": bool,
         "light_score": int,
         "dark_score": int,
         "light_left": int,
@@ -78,7 +78,7 @@ def run():
     df.drop_duplicates(["game", "x", "y", "roll"], inplace=True)
     print(f"Count after:{len(df)}")
     print(df.head())
-    df.to_parquet("data/dataset_depth8_Sam_Raph_Sothatsit6.parquet")
+    df.to_parquet("data/dataset_depth8_Sam_Raph_Sothatsit7.parquet")
 
 
 if __name__ == "__main__":
