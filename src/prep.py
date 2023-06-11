@@ -15,8 +15,8 @@ def convert_game_to_cols(df):
     #j = df['game'].str.replace('\s|\.', '', regex=True).str.translate(table).str.split('', expand=True)
     j = df['game'].apply(replace_chars)
     j = j.astype("int32") - 2
-    print(j)
+    #print(j)
     k = ['game' + str(i) for i in range(20)]
     df[k] = j
-    print(time.time() - t1)
+    #print(time.time() - t1)
     return df
