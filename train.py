@@ -4,11 +4,13 @@ import joblib
 
 
 def run():
-    data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit.parquet")
+    print("Loading data...")
+    data = pd.read_parquet("data/dataset_depth8_Sam_Raph_Sothatsit7.parquet")
     data.pop("game")
     data.pop("rank")
     label = "utility"
     
+    print("Splitting data into train and test sets...")
     train_data = data.sample(frac=0.8, random_state=1)
     test_data = data.drop(train_data.index)
     # Convert the data into LightGBM's format
@@ -30,12 +32,13 @@ def run():
             print("Saving checkpoint to lgb_checkpoint.txt")
             obj.model.save_model('lgb_checkpoint.txt', num_iteration=obj.model.best_iteration)
 
+    print("Training model...")
     # Train the model
     model = lgb.train(params, train_dataset, valid_sets=[test_dataset], num_boost_round=5000, callbacks=[
         save_often,
         lgb.callback.early_stopping(15),
         lgb.callback.log_evaluation()
-    ])
+    ], init_model=lgb.Booster(model_file='lgb_checkpoint.txt'))
     # save model
     model.save_model('lgb_checkpoint.txt', num_iteration=model.best_iteration)
 

@@ -1,11 +1,15 @@
+import time
 from flask import Flask, jsonify, request
 import pickle
+import flask
+import joblib
 from pandas import json_normalize
 from src.prep import convert_game_to_cols
 import os
 import requests
 import shutil
 import dotenv
+import lightgbm as lgb
 
 dotenv.load_dotenv()
 
@@ -26,26 +30,47 @@ if model_name.startswith("http"):
     
 def load():
     print("loading model")
-    with open(model_name, 'rb') as f:
-        model = pickle.load(f)
+    model = None
+    if model_name.endswith(".pkl"):
+        with open(model_name, 'rb') as f:
+            model = pickle.load(f)
+    elif model_name.endswith(".joblib"):
+        model = joblib.load(model_name)
+    elif model_name.endswith(".txt"):
+        model = lgb.Booster(model_file=model_name)
+    else:
+        raise Exception("Model file must be .pkl, .joblib, or .txt")
     return model
 
+max_model_pool_size = 1
+d = {
+    "current_model_pool_size": 0,
+}
 model_pool = [
     load(),
 ]
 
 @app.route('/infer', methods=['POST'])
 def infer():
+    global max_model_pool_size, d
     data = request.get_json()
     df = json_normalize(data)
 
     df = convert_game_to_cols(df)
     
     df = df.drop(columns=["game"])
-    if len(model_pool) == 0:
-        model = load()
-    else:
-        model = model_pool.pop()
+    while True:
+        if len(model_pool) == 0:
+            if d["current_model_pool_size"] >= max_model_pool_size:
+                time.sleep(1)
+                print("Waiting")
+                continue
+            d["current_model_pool_size"] += 1
+            model = load()
+            break
+        else:
+            model = model_pool.pop()
+            break
     q = model.predict(df)
     model_pool.append(model)
     return jsonify(utilities=list(q))
